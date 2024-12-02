@@ -94,7 +94,7 @@ export default function AgentNetwork({ agents }) {
       interaction: {
         hover: true,
         tooltipDelay: 300,
-        zoomable: false,
+        zoomView: false,
       },
     };
 

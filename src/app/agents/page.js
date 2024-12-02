@@ -193,7 +193,7 @@ export default function AgentsPage() {
   }
 
   async function handleRun(agentId, agentName) {
-    const toastId = toast.loading(`Starting agent: ${agentName}...`);
+    const toastId = toast.loading(`Scheduling agent: ${agentName}...`);
 
     try {
       const response = await fetch("/api/agents/run", {
@@ -207,12 +207,12 @@ export default function AgentsPage() {
       }
 
       const { runId } = await response.json();
-      toast.success(`Agent ${agentName} started successfully!`, {
+      toast.success(`Agent ${agentName} scheduled successfully!`, {
         id: toastId,
       });
     } catch (error) {
-      console.error("Error running agent:", error);
-      toast.error(`Failed to start agent: ${agentName}`, {
+      console.error("Error scheduling agent:", error);
+      toast.error(`Failed to schedule agent: ${agentName}`, {
         id: toastId,
       });
     }
