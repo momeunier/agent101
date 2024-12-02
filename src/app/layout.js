@@ -18,11 +18,9 @@ export default function RootLayout({ children }) {
         className={`${inter.className} h-full bg-black text-white antialiased`}
       >
         <AuthProvider>
-          <div className="min-h-full flex flex-col">
+          <div className="min-h-screen flex flex-col">
             <Header />
-            <main className="flex-1 flex items-center justify-center">
-              {children}
-            </main>
+            <main className="flex-1 w-full p-4">{children}</main>
           </div>
           <Toaster
             position="bottom-right"

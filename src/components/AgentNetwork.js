@@ -112,7 +112,7 @@ export default function AgentNetwork({ agents }) {
       <h2 className="text-xl font-semibold mb-4">Agent Network</h2>
       <div
         ref={networkRef}
-        className="w-full h-[400px] bg-black/30 rounded-lg"
+        className="w-full h-[600px] bg-black/30 rounded-lg"
       />
     </div>
   );

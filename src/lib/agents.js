@@ -44,10 +44,17 @@ export async function getAgents(email) {
 
 export async function deleteAgent(email, agentId) {
   try {
+    // Delete all runs associated with this agent
+    const runKeys = await redis.keys(`runs:${email}:${agentId}:*`);
+    if (runKeys.length > 0) {
+      await redis.del(...runKeys);
+    }
+
     // Remove agent details
     await redis.del(`agents:${email}:${agentId}`);
     // Remove from user's agent list
     await redis.srem(`agents:${email}`, agentId);
+
     return true;
   } catch (error) {
     console.error("Error deleting agent:", error);

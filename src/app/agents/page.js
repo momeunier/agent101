@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AgentNetwork from "@/components/AgentNetwork";
 import AutoCompleteTextarea from "@/components/AutoCompleteTextarea";
 import toast from "react-hot-toast";
+import Markdown from "react-markdown";
 
 const DEFAULT_PARAMETERS = JSON.stringify(
   {
@@ -63,7 +64,7 @@ export default function AgentsPage() {
     }
   };
 
-  // Function to generate suggestions based on parent agent
+  // Function to generate suggestions based on parent agent's JSON structure
   const getParentSuggestions = useMemo(() => {
     if (!form.parentAgent) return [];
 
@@ -74,10 +75,16 @@ export default function AgentsPage() {
       const params = JSON.parse(parentAgent.parameters);
       const suggestions = [];
 
-      // Only look at the items array's idea and result fields
-      if (params.items) {
-        suggestions.push(`${parentAgent.name}.idea`);
-        suggestions.push(`${parentAgent.name}.result`);
+      // Extract all unique keys from the items array
+      if (params.items && Array.isArray(params.items)) {
+        params.items.forEach((item) => {
+          Object.keys(item).forEach((key) => {
+            const suggestion = `${parentAgent.name}.${key}`;
+            if (!suggestions.includes(suggestion)) {
+              suggestions.push(suggestion);
+            }
+          });
+        });
       }
 
       return suggestions;
@@ -219,17 +226,17 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 pt-16 sm:pt-24 pb-8">
-      <div className="text-center mb-12">
+    <div className="w-full h-full">
+      <div className="text-center mb-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-blue-300 bg-clip-text text-transparent">
           Manage Agents
         </h1>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex gap-8 h-[calc(100vh-8rem)]">
         {/* Form Section */}
-        <div className="w-1/3">
-          <div className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm sticky top-24">
+        <div className="w-1/3 min-w-[350px]">
+          <div className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-6">
               {editingAgent ? "Edit Agent" : "Create New Agent"}
             </h2>
@@ -250,15 +257,15 @@ export default function AgentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-1">
-                  Backstory
+                  Backstory (Markdown)
                 </label>
                 <AutoCompleteTextarea
                   value={form.backstory}
                   onChange={(e) =>
                     setForm({ ...form, backstory: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32"
-                  placeholder="Enter agent backstory"
+                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32 font-mono text-sm"
+                  placeholder="Enter agent backstory using markdown"
                   required
                   suggestions={getParentSuggestions}
                 />
@@ -266,13 +273,13 @@ export default function AgentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-1">
-                  Goal
+                  Goal (Markdown)
                 </label>
                 <AutoCompleteTextarea
                   value={form.goal}
                   onChange={(e) => setForm({ ...form, goal: e.target.value })}
-                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24"
-                  placeholder="Enter agent goal"
+                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-24 font-mono text-sm"
+                  placeholder="Enter agent goal using markdown"
                   required
                   suggestions={getParentSuggestions}
                 />
@@ -358,7 +365,7 @@ export default function AgentsPage() {
         </div>
 
         {/* Agents List Section */}
-        <div className="w-2/3">
+        <div className="flex-1 overflow-y-auto pr-4">
           {agents.length > 0 && <AgentNetwork agents={agents} />}
 
           <div className="flex justify-between items-center mb-4">
@@ -415,13 +422,17 @@ export default function AgentsPage() {
                       <h4 className="text-sm font-medium text-white/80 mb-1">
                         Backstory
                       </h4>
-                      <p className="text-white/60">{agent.backstory}</p>
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <Markdown>{agent.backstory}</Markdown>
+                      </div>
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-white/80 mb-1">
                         Goal
                       </h4>
-                      <p className="text-white/60">{agent.goal}</p>
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <Markdown>{agent.goal}</Markdown>
+                      </div>
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-white/80 mb-1">
