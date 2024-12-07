@@ -20,7 +20,9 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
             <Header />
-            <main className="flex-1 w-full p-4">{children}</main>
+            <main className="flex-1 w-full p-4 mt-16 overflow-hidden">
+              {children}
+            </main>
           </div>
           <Toaster
             position="bottom-right"

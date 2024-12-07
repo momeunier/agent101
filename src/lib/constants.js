@@ -1,0 +1,7 @@
+export const ChainStatus = {
+  SCHEDULED: "SCHEDULED",
+  TODO: "TODO",
+  RUNNING: "RUNNING",
+  PARTIAL: "PARTIAL",
+  COMPLETED: "COMPLETED",
+};

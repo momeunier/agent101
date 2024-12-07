@@ -20,6 +20,7 @@ export default function AgentsPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [agents, setAgents] = useState([]);
+  const [chain, setChain] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [status, setStatus] = useState("idle");
   const [editingAgent, setEditingAgent] = useState(null);
@@ -40,8 +41,33 @@ export default function AgentsPage() {
   useEffect(() => {
     if (user) {
       fetchAgents();
+      fetchChainDetails();
     }
   }, [user]);
+
+  const fetchChainDetails = async () => {
+    try {
+      // Get chainId from the agent's chain field
+      const chainId = agents.length > 0 ? agents[0].chain : null;
+
+      if (chainId) {
+        const response = await fetch(`/api/chains/${chainId}`);
+        if (response.ok) {
+          const chainData = await response.json();
+          setChain(chainData);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching chain details:", error);
+    }
+  };
+
+  // Add this after agents are fetched
+  useEffect(() => {
+    if (agents.length > 0) {
+      fetchChainDetails();
+    }
+  }, [agents]);
 
   useEffect(() => {
     if (editingAgent) {
@@ -226,17 +252,11 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="w-full h-full">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-blue-300 bg-clip-text text-transparent">
-          Manage Agents
-        </h1>
-      </div>
-
-      <div className="flex gap-8 h-[calc(100vh-8rem)]">
+    <div className="h-[calc(100vh-5rem)]">
+      <div className="flex gap-8 h-full">
         {/* Form Section */}
         <div className="w-1/3 min-w-[350px]">
-          <div className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm sticky top-20 max-h-full overflow-y-auto">
             <h2 className="text-xl font-semibold mb-6">
               {editingAgent ? "Edit Agent" : "Create New Agent"}
             </h2>
@@ -366,98 +386,105 @@ export default function AgentsPage() {
 
         {/* Agents List Section */}
         <div className="flex-1 overflow-y-auto pr-4">
-          {agents.length > 0 && <AgentNetwork agents={agents} />}
+          {agents.length > 0 && (
+            <div className="mb-8">
+              <AgentNetwork agents={agents} />
+            </div>
+          )}
 
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Your Agents</h2>
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              {isCollapsed ? "Expand" : "Collapse"} All
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {agents.map((agent) => (
-              <div
-                key={agent.id}
-                className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm"
+          <div className="bg-gray-900 rounded-xl border border-white/10 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Your Agents</h2>
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="px-3 py-1 text-sm rounded-full bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700 transition-colors"
               >
-                <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-medium text-white">
-                    {agent.name}
-                    {agent.parentAgent && (
-                      <span className="ml-2 text-sm text-white/60">
-                        (Child of:{" "}
-                        {agents.find((a) => a.id === agent.parentAgent)?.name})
-                      </span>
-                    )}
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setEditingAgent(agent)}
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(agent.id)}
-                      className="text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleRun(agent.id, agent.name)}
-                      className="text-green-400 hover:text-green-300 transition-colors"
-                    >
-                      Run
-                    </button>
+                {isCollapsed ? "Expand" : "Collapse"} All
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {agents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="bg-gray-800/50 rounded-xl border border-white/10 p-6 backdrop-blur-sm hover:border-blue-500/50 transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-medium text-white">
+                      {agent.name}
+                      {agent.parentAgent && (
+                        <span className="ml-2 text-sm text-white/60">
+                          (Child of:{" "}
+                          {agents.find((a) => a.id === agent.parentAgent)?.name}
+                          )
+                        </span>
+                      )}
+                    </h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingAgent(agent)}
+                        className="px-3 py-1 text-sm rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(agent.id)}
+                        className="px-3 py-1 text-sm rounded-full bg-red-500/10 text-red-300 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => handleRun(agent.id, agent.name)}
+                        className="px-3 py-1 text-sm rounded-full bg-green-500/10 text-green-300 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                      >
+                        Run
+                      </button>
+                    </div>
                   </div>
+
+                  {!isCollapsed && (
+                    <div className="mt-4 space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-white/80 mb-1">
+                          Backstory
+                        </h4>
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <Markdown>{agent.backstory}</Markdown>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-white/80 mb-1">
+                          Goal
+                        </h4>
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <Markdown>{agent.goal}</Markdown>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-white/80 mb-1">
+                          Parameters
+                        </h4>
+                        <pre className="text-white/60 bg-black/30 p-2 rounded-lg overflow-x-auto font-mono text-xs">
+                          {agent.parameters
+                            ? JSON.stringify(
+                                JSON.parse(agent.parameters),
+                                null,
+                                2
+                              )
+                            : "{}"}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              ))}
 
-                {!isCollapsed && (
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-white/80 mb-1">
-                        Backstory
-                      </h4>
-                      <div className="prose prose-invert prose-sm max-w-none">
-                        <Markdown>{agent.backstory}</Markdown>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-white/80 mb-1">
-                        Goal
-                      </h4>
-                      <div className="prose prose-invert prose-sm max-w-none">
-                        <Markdown>{agent.goal}</Markdown>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-white/80 mb-1">
-                        Parameters
-                      </h4>
-                      <pre className="text-white/60 bg-black/30 p-2 rounded-lg overflow-x-auto font-mono text-xs">
-                        {agent.parameters
-                          ? JSON.stringify(
-                              JSON.parse(agent.parameters),
-                              null,
-                              2
-                            )
-                          : "{}"}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {agents.length === 0 && (
-              <div className="text-center text-white/60 py-8">
-                No agents created yet. Create your first agent using the form.
-              </div>
-            )}
+              {agents.length === 0 && (
+                <div className="text-center text-white/60 py-8">
+                  No agents created yet. Create your first agent using the form.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

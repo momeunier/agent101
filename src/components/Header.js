@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 function UserAvatar({ email }) {
   const initials = email.split("@")[0].slice(0, 2).toUpperCase();
@@ -17,7 +18,40 @@ function UserAvatar({ email }) {
 export default function Header() {
   const { user, logout } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
+  const [chain, setChain] = useState(null);
   const profileRef = useRef(null);
+  const pathname = usePathname();
+
+  // Fetch chain details if we're on the agents page
+  useEffect(() => {
+    async function fetchChainDetails() {
+      try {
+        // First fetch agents to get the chain ID
+        const agentsResponse = await fetch("/api/agents");
+        if (agentsResponse.ok) {
+          const agents = await agentsResponse.json();
+          // Get chain ID from the first agent (they should all have the same chain ID)
+          const chainId = agents[0]?.chain;
+
+          if (chainId) {
+            const chainResponse = await fetch(`/api/chains/${chainId}`);
+            if (chainResponse.ok) {
+              const chainData = await chainResponse.json();
+              setChain(chainData);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching chain details:", error);
+      }
+    }
+
+    if (user && pathname === "/agents") {
+      fetchChainDetails();
+    } else {
+      setChain(null);
+    }
+  }, [pathname, user]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -41,7 +75,20 @@ export default function Header() {
             >
               Agent101
             </Link>
-            {user && (
+            {user && chain && (
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-400">/</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-medium text-white">
+                    {chain.name}
+                  </span>
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-gray-800 text-gray-300 border border-gray-700">
+                    {chain.status}
+                  </span>
+                </div>
+              </div>
+            )}
+            {user && !chain && (
               <Link
                 href="/agents"
                 className="text-white/80 hover:text-white transition-colors"

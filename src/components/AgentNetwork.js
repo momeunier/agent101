@@ -23,11 +23,18 @@ export default function AgentNetwork({ agents }) {
         },
       },
       font: {
+        size: 16,
         color: "#fff",
+      },
+      shadow: {
+        enabled: true,
+        color: "rgba(59, 130, 246, 0.3)",
+        size: 10,
+        x: 0,
+        y: 0,
       },
     }));
 
-    // Create edges from parent-child relationships
     const edges = agents
       .filter((agent) => agent.parentAgent)
       .map((agent) => ({
@@ -37,11 +44,16 @@ export default function AgentNetwork({ agents }) {
           to: {
             enabled: true,
             type: "arrow",
+            scaleFactor: 0.8,
           },
         },
         color: {
           color: "#3b82f6",
           highlight: "#60a5fa",
+        },
+        smooth: {
+          type: "cubicBezier",
+          roundness: 0.5,
         },
       }));
 
@@ -56,9 +68,6 @@ export default function AgentNetwork({ agents }) {
         size: 20,
         borderWidth: 2,
         shadow: true,
-        font: {
-          color: "#fff",
-        },
         color: {
           background: "#1d4ed8",
           border: "#2563eb",
@@ -87,14 +96,21 @@ export default function AgentNetwork({ agents }) {
         barnesHut: {
           gravitationalConstant: -2000,
           centralGravity: 0.3,
-          springLength: 200,
+          springLength: 100,
           springConstant: 0.04,
+        },
+        stabilization: {
+          enabled: true,
+          iterations: 50,
+          fit: true,
         },
       },
       interaction: {
         hover: true,
         tooltipDelay: 300,
         zoomView: false,
+        dragView: true,
+        dragNodes: true,
       },
     };
 
@@ -108,11 +124,11 @@ export default function AgentNetwork({ agents }) {
   }, [agents]);
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-white/10 p-6 backdrop-blur-sm mb-4">
-      <h2 className="text-xl font-semibold mb-4">Agent Network</h2>
+    <div className="bg-gray-800/50 rounded-xl border border-white/10 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold p-4">Agent Network</h2>
       <div
         ref={networkRef}
-        className="w-full h-[600px] bg-black/30 rounded-lg"
+        className="w-full h-[250px] bg-gradient-to-b from-black/30 to-black/10 p-4"
       />
     </div>
   );
